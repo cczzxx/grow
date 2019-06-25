@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        
+    </style>
+</head>
+<body>
+    <p>值是：<span id="value"></span></p>
+    <input id="valueInput" type="text" onkeyup="onVueKeyUp(event)">
+</body>
+</html>
+<script>
+    //vue2.0双向绑定 defineProperty
+    const vueDoubleObj = {
+        value: ''
+    }
+    
+    function onVueKeyUp(event) {
+        vueDoubleObj.value = event.target.value
+    }
+    
+    // 对 obj.value 进行拦截
+    Object.defineProperty(vueDoubleObj, 'value', {
+        // get: function() {
+        //     return value
+        // },
+        set: function(newValue) {
+            value = newValue
+            document.querySelector('#value').innerHTML = newValue // 更新视图层
+            document.querySelector('#valueInput').value = newValue // 数据模型改变
+        }
+    })
+
+
+    // git合并 https://blog.csdn.net/boysky0015/article/details/78185879/
+    // this指向
+    var obj = {
+        foo: function(){
+            console.log(this)
+        }
+    }
+
+    var bar = obj.foo
+    obj.foo() // 打印出的 this 是 obj
+    bar() // 打印出的 this 是 window
+    var arr = [bar];
+    arr[0]();
+    // func(p1, p2) func.call(undefined, p1, p2)
+    // obj.child.method(p1, p2) obj.child.method(obj.child, p1, p2)
+    // func.call(context, p1, p2)
+
+    // 继承
+    function Parent1() {
+        this.name = "parent1";
+    }
+    Parent1.prototype.say = function() {};
+    function Child1() {
+        Parent1.call(this);
+        this.type = "child";
+    }
+    var child1 = new Child1();
+    console.log(child1);
+
+    function Parent2() {
+        this.name = "parent2";
+        this.arr = [1, 2, 3];
+    }
+    Parent2.prototype.say = function() {
+        console.log(999);
+    };
+    function Child2() {
+        this.type = "child2";
+    }
+    Child2.prototype = new Parent2();
+    var child21 = new Child2();
+    var child22 = new Child2();
+    child21.arr.push(4);
+    console.log(child21, child22);
+
+    function Child3() {
+        Parent2.call(this);
+        this.type = "child3";
+    }
+    Child3.prototype = new Parent2();
+    var child31 = new Child3();
+    var child32 = new Child3();
+    child31.arr.push(4);
+    console.log(child31, child32);
+    child31.say = function() {
+        console.log(123);
+    }
+    child31.say();
+    child32.say();
+
+    function Child4() {
+        Parent2.call(this);
+        this.type = "child4";
+    }
+    Child4.prototype = Parent2.prototype;
+    var child41 = new Child4();
+    var child42 = new Child4();
+    child41.arr.push(5);
+    console.log(child41, child42);//此时child41 child42的constructor指向Parent2，表示由Parent2实例化
+
+    function Child5() {
+        Parent2.call(this);
+        this.type = "child5";
+    }
+    Child5.prototype = Object.create(Parent2.prototype);//Object.create()将对象继承到__proto__上
+    var child51 = new Child5();
+    var child52 = new Child5();
+    child51.arr.push(4);
+    child51.say = function() {
+        console.log(666);
+    };
+    child51.say();
+    child52.say();
+    console.log(child51, child52);
+
+    let arr1 = [{name: "xiaoa", age: 16}, {name: "xiaob", age: 17}];
+    let arr2 = [1, 2, 3];
+    arr1.forEach(item => {//此时相当于创建了一个新的obj
+        item.age += 1;
+    })
+    arr2.forEach(item => {//此时相当于创建了一个新的number基础数据类型
+        console.log(item)
+        item += 1;
+    })
+    arr2.filter(item => {
+        return item > 1;
+    }).forEach(item => {
+        console.log(item)
+    })
+    console.log(arr1, arr2);
+    let arr3 = ["123", 1000, 0, '100.23', "sjsjhj"];
+    console.log(arr3.sort())
+    let ifHave = arr1.some(item => {//some相当于||判断
+        return item.age > 17;
+    })
+    console.log(ifHave);//ture
+    ifHave = arr1.every(item => {//every相当于&&判断
+        return item.age > 17;
+    })
+    console.log(ifHave);
+
+    let arr5 = [1, 2, 3, 4];
+    var res1 = arr5.reduce((prev, next) => {
+        return prev + next;
+    });
+    var res2 = arr5.reduce((prev, next) => {
+        return prev * next;
+    });
+    console.log(res1, res2);
+
+    function getAge(...args) {
+        console.log(typeof args, args);
+    }
+    getAge(21);
+
+    function getAge1() {
+        age = 21;
+        console.log(age);//21
+    }
+    getAge1();
+
+    let b = new Number(3);
+    console.log(b);
+
+    const aa = {};
+    const bb = { key: "b" };
+    const cc = { key: "c" };
+
+    aa[bb] = 123;
+    aa[cc] = 456;
+
+    console.log(aa[bb], aa);
+    
+    const dd = new Boolean(false);
+    console.log(dd);
+    if(dd) console.log(123);
+
+    const numbers = [1, 2, 3];
+    numbers[10] = 11;
+    console.log(numbers);
+
+    const abc = [[0, 1], [2, 3]].reduce((acc, cur) => {
+            return acc.concat(cur);
+        },[1, 2]
+    );
+    console.log(abc);//[1, 2].concat([0, 1]).concat([2, 3]);
+
+    // function fn1() {
+    //     console.log(1);
+    // }
+    // function fn2() {
+    //     console.log(2);
+    // }
+    // function fn3() {
+    //     console.log(3);
+    // }
+
+    // setTimeout(fn1, 3000);
+    // setTimeout(fn2, 1000);
+    // setTimeout(fn3, 2000);//2 3 1
+
+    function exponent (x) {//这个例子中 有一个返回函数的函数，并在返回的函数中使用外部的变量， 这称为闭包
+        return function (y) {
+        //和math.pow() 或者x的y次方是一样的
+            return y ** x
+        }
+    }
+
+    const square = exponent(2)
+
+    console.log(square(2), square(3)) // 4, 9
+
+    console.log(exponent(3)(2)) // 8
+
+    Function.prototype.call2 = function(context) {
+        console.log("first", this);//this为test函数
+        if(typeof this !== "function") {
+            throw new TypeError('错错错');
+        }
+
+        context = context || window;
+        console.log("second", context);
+
+        const { fn } = context;//保存默认的fn
+        console.log("third", { fn }.fn);
+
+        context.fn = this;
+        console.log("fourth", context.fn, this);
+        const args = [...arguments].slice(1);
+        const result = context.fn(...args);
+
+        context.fn = fn;//恢复默认的fn
+        return result;
+    }
+    //apply的实现与call相似 只是传参格式不同，要传数组
+    //bind的最后则是返回一个基于call|apply的函数 使用时需再调用一次
+
+    Function.prototype.call3 = function(con) {//简写
+        con = con || window;
+        con.fn = this;
+        console.log(arguments);
+        var args = [...arguments].slice(1);//arguments第一项是对象 去掉 为了console.log(arg1, arg2);
+        con.fn(...args);
+    }
+
+    function test(arg1, arg2) {
+        console.log(arg1, arg2);
+        console.log(this.a, this.b, this.c);
+    }
+    const testObj = {
+        a: 3,
+        b: 4,
+        c: 5
+    }
+    test.call3(testObj, 1, 2);
+
+    class Event {//发布订阅模式
+        constructor() {
+            this._cache = {}
+        }
+
+        on(type, callback) {
+            this._cache[type] = this._cache[type] || [];
+            console.log(this._cache[type])
+            let fns = this._cache[type];
+            if(fns.indexOf(callback) === -1) {
+                fns.push(callback);
+            }
+            return this;
+        }
+
+        trigger(type, ...data) {
+            console.log(this._cache[type])
+            let fns = this._cache[type];
+            if(Array.isArray(fns)) {
+                fns.forEach(fn => {
+                    fn(...data);
+                })
+            }
+            return this;
+        }
+
+        off(type, callback) {
+            let fns = this._cache[type];
+            if(Array.isArray(fns)) {
+                if(callback) {
+                    let index = fn.indexOf(callback);
+                    if(index !== -1) fns.splice(index, 1);
+                }else {
+                    fns = [];
+                }
+            }
+            return this;
+        }
+    }
+
+    const event = new Event();
+    event.on("test", a => {
+        console.log(a);
+    }).on("test1", a => {
+        console.log(123)
+    }).trigger("test", "hello");
+
+    let pubSub = {//发布订阅模式
+        list:{},
+        subscribe:function(key,fn){  // 订阅
+            if (!this.list[key]) this.list[key] = [];
+            this.list[key].push(fn);
+        },
+        publish:function(){  // 发布
+            let arg = arguments;
+            let key = [].shift.call(arg);
+            let fns = this.list[key];
+
+            if(!fns || fns.length <= 0) return false;
+
+            for(var i=0, len = fns.length; i < len; i++) {
+                fns[i].apply(this, arg);
+            }
+
+        },
+        unSubscribe(key) {  // 取消订阅
+            delete this.list[key];
+        }
+    };
+
+    pubSub.subscribe('name', (name) => {
+        console.log('your name is ' + name);
+    });
+    pubSub.subscribe('sex', (sex) => {
+        console.log('your sex is ' + sex);
+    });
+    pubSub.publish('name', 'ttsy1');  // your name is ttsy1
+    pubSub.publish('sex', 'male');  // your sex is male
+
+
+    //观察者模式
+    function Subject() {
+        this.observers = [];
+    }
+
+    Subject.prototype = {
+        add: function(observer) {  // 添加
+            this.observers.push(observer);
+        },
+        remove: function(observer) {  // 删除
+            var observers = this.observers;
+            for(var i = 0;i < observers.length;i++) {
+                if(observers[i] === observer){
+                    observers.splice(i,1);
+                }
+            }
+        },
+        notify: function() {  // 通知
+            var observers = this.observers;
+            for(var i = 0;i < observers.length;i++){
+                observers[i].update();
+            }
+        }
+    }
+
+    function Observer(name) {
+        this.name = name;
+    }
+
+    Observer.prototype = {
+        update: function() {  // 更新
+            console.log('my name is '+this.name);
+        }
+    }
+
+    var sub = new Subject();
+
+    var obs1 = new Observer('ttsy1');
+    var obs2 = new Observer('ttsy2');
+
+    sub.add(obs1);
+    sub.add(obs2);
+    sub.notify();  //my name is ttsy1、my name is ttsy2
+
+    
+    // ts
+    // 新增特殊类型
+        // tuple 元祖 有组织的数组，可规定数组的数据类型顺序
+    // const tuple: [number, string, string] = [24, "Indrek" , "Lasn"] 
+        // enum 枚举 可为一组数值赋予友好的名字
+    // enum Color {Red = 1, Green = 2, Blue = 4}
+    // let colorName: string = Color[2];//2
+        // void 没有任何类型的
+    // ts中必须在函数中定义返回类型，如
+    // function sayName(name: string): string {
+    //     return name;
+    // }
+    // 若没有返回值可以将返回值定义为void，如
+    // function sayName(name: string): void {
+    //     console.log(name);
+    // }
+        // any 什么类型都行
+    // let person: any = "冲冲冲";
+    // person = 25;
+    // person = true;
+        // never 永远不会符合，常用来抛出错误
+    // const error = (message: string): never => {
+    //     throw new Error(message);
+    // } 
+    // const showError = () => error('不好！');
+    // showError();
+                // const bird = {
+                //     size: "small"
+                // };
+
+                // const mouse = {
+                //     name: "Mickey",
+                //     small: true
+                // };
+                // // console.log(mouse.bird.size);
+                // console.log(mouse[bird.size]);
+                // console.log(mouse[bird["size"]]);
+</script>
