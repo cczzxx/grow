@@ -55,6 +55,8 @@
     // func.call(context, p1, p2)
 
     // 继承
+    //借助构造函数实现继承 主要是借用call 来改变this的指向，通过 call 调用 Parent
+    //此时 Parent 中的 this 是指 Child1 这种只能继承父类的实例属性和方法，不能继承原型属性/方法。
     function Parent1() {
         this.name = "parent1";
     }
@@ -64,8 +66,12 @@
         this.type = "child";
     }
     var child1 = new Child1();
+    //child1.say(); //TypeError child1.say is not a function
     console.log(child1);
 
+    //借助原型链实现继承
+    //Child2.prototype = new Parent2(); <=> Child2.prototype.__proto__ = Parent2.prototype
+    //缺点，s1.__proto__ 和 s2.__proto__指向同一个地址即 父类的prototype。
     function Parent2() {
         this.name = "parent2";
         this.arr = [1, 2, 3];
@@ -80,8 +86,11 @@
     var child21 = new Child2();
     var child22 = new Child2();
     child21.arr.push(4);
-    console.log(child21, child22);
+    console.log(child21, child22, child21.arr, child22.arr);
+    child21.say();
 
+    //组合方式实现继承
+    //这种方式有点缺点就是我实例一个对象的时， 父类 new 了两次，一次是var s3 = new Child3()对应 Child3.prototype = new Parent3()还要new 一次。
     function Child3() {
         Parent2.call(this);
         this.type = "child3";
@@ -97,11 +106,14 @@
     child31.say();
     child32.say();
 
+    //组合继承的优化1
     function Child4() {
         Parent2.call(this);
         this.type = "child4";
+        this.name = "child4"
     }
     Child4.prototype = Parent2.prototype;
+    Child4.prototype.constructor = Child4;
     var child41 = new Child4();
     var child42 = new Child4();
     child41.arr.push(5);
@@ -112,6 +124,7 @@
         this.type = "child5";
     }
     Child5.prototype = Object.create(Parent2.prototype);//Object.create()将对象继承到__proto__上
+    Child5.prototype.constructor = Child5;
     var child51 = new Child5();
     var child52 = new Child5();
     child51.arr.push(4);
@@ -121,6 +134,13 @@
     child51.say();
     child52.say();
     console.log(child51, child52);
+
+    var test123 = Object.create({x:123,y:345});
+    console.log(test123);//{}
+    console.log(test123.x);//123
+    console.log(test123.__proto__.x);//3
+    console.log(test123.__proto__.x === test123.x);//true
+    console.log(test123.__proto__);//{x:123, y:345}
 
     let arr1 = [{name: "xiaoa", age: 16}, {name: "xiaob", age: 17}];
     let arr2 = [1, 2, 3];
