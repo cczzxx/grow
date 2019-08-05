@@ -445,4 +445,56 @@
                 // // console.log(mouse.bird.size);
                 // console.log(mouse[bird.size]);
                 // console.log(mouse[bird["size"]]);
+    
+                
+
+
+function PromiseM() {
+    this.status = "pending";
+    this.msg = "";
+    var that = this;
+    console.log("herePP", arguments);
+    var process = arguments[0];
+    process(function() {
+        that.status = 'resolve';
+        that.msg = arguments[0];
+    }, function() {
+        that.status = 'reject';
+        that.msg = arguments[0];
+    });
+    return this;
+}
+PromiseM.prototype.then = function() {
+    if(this.status == 'resolve') arguments[0](this.msg);
+    if(this.status == 'reject' && arguments[1]) arguments[1](this.msg);
+}
+
+// 测试用例
+var p = new PromiseM(function(resolve, reject) {
+    resolve("123");
+});
+
+p.then(function(success) {
+    console.log(success);
+    console.log("success");
+}, function() {
+    console.log("fail！");
+});
+
+Object.myCreate = function(parent, props) {
+    var obj = new Object();
+    obj.setPrototypeOf(obj, parent);
+    obj.defineProperties(obj, props);
+    return obj;
+}
+var father={bal:1000,car:"=b="}
+var hmm=Object.myCreate(father,{//create调用的也是defineproperty
+  phone:{//默认为false
+    value:"肾6s",
+    writable:true,
+    enumertable:true,
+    configurable:true
+  }
+});
+console.log(hmm);
 </script>
