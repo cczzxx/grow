@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>电梯上人</title>
+  <style>
+
+  </style>
+</head>
+<body>
+    <button id="addBtn">电梯上人，人数+1</button>
+    <p id="personNum">电梯人数：0（假设电梯可以无限装人）</p>
+
+    <button id="addBtn1">进站人数+1</button>
+    <p id="personTotal">旅客总人数：0</p>
+    <p id="personNum1">进站次数：0</p>
+    <script>
+        var personNum = 0; // 电梯人数
+        var okNext = true; // 是否可进行下次执行
+        var timeoutFn = null;
+        var addBtn = document.getElementById('addBtn'); // 获取添加人数按钮
+        var personNumP = document.getElementById('personNum'); // 获取显示人数的标签
+        /**
+        * @method 电梯添加人数
+        * @description 电梯可以上人，但是上人以后就不能再上了，不管怎么触发都不行，除非停止触发500毫秒以后，再触发的时候才可以继续执行
+        */
+        function addPerson() {
+            if (okNext) {
+                okNext = false;
+                personNum ++;
+                personNumP.innerHTML = `电梯人数：${personNum}（假设电梯可以无限装人）`;
+            }
+            clearTimeout(timeoutFn);
+            timeoutFn = setTimeout(function () {
+                okNext = true;
+            }, 500)
+        }
+
+        // var timer = null;
+        // var flag = true;
+        // function addPer() {
+        //     if(flag) {
+        //         personNum ++;
+        //         flag = false;
+        //     }
+        //     if(timer) clearTimeout(timer);
+        //     timer = setTimeout(() => {
+        //         flag = true;
+        //     }, 500);
+        // }
+
+        // addBtn.addEventListener('click', addPerson);
+
+        function add() {
+            personNum ++;
+            personNumP.innerHTML = `电梯人数：${personNum}（假设电梯可以无限装人）`;
+        }
+        function debounce(fn, wait) {
+            let timer = null;
+            return function() {
+                if(timer) clearTimeout(timer);
+                timer = setTimeout(function() {
+                    fn();
+                }, wait)
+            }
+        }
+
+        // function something() {};
+        // function fangdou(fn, wait) {
+        //     let timer = null;
+        //     return function() {
+        //         if(timer) clearTimeout(timer);
+        //         timer = setTimeout(function() {
+        //             fn();
+        //         }, wait)
+        //     }
+        // }
+        // dom.addEventListener('click', fangdou(something, 500))
+
+
+        // addBtn.addEventListener('click', debounce(add, 500));
+        addBtn.addEventListener('click', addPerson);
+
+
+
+        var personNum1 = 0; // 进站人数
+        var personTotal = 0; // 一共来了多少人
+        var addBtn1 = document.getElementById('addBtn1'); // 获取添加人数按钮
+        var personNumP1 = document.getElementById('personNum1'); // 获取显示人数的标签
+        var personTotalP = document.getElementById('personTotal'); // 获取显示进入次数 每次进入的时间有规定
+        /**
+        * @method 增加进站人数
+        * @description 每个时间间隔执行的方法
+        */
+        function addPerson1() {
+            personNum1 ++;
+            personNumP1.innerHTML = `进站次数：${personNum1}`;
+        }
+        /**
+        * @method 节流方法（时间戳）
+        * @param {Function} fn 需要节流的实际方法
+        * @param {Number} wait 需要控制的时间长度
+        * @description 根据上一次执行的时间，和这一次执行的时间做比较，如果大于控制的时间，就可以执行
+        */
+        function throttle(fn, wait) {
+            var prev = 0; // 第一次执行的时候是0，所以第一次点击的时候肯定大于这个数，所以会立马执行
+            return function () {
+                var context = this;
+                // var args = arguments;
+                // console.log(args);
+                var now = Date.now(); // 实际执行的时间
+                personTotal ++;
+                personTotalP.innerHTML = `旅客总人数：${personTotal}`;
+                if (now - prev >= wait) { // 执行的时间是不是比上次执行的时间大于需要延迟的时间，大于，我们就执行
+                    fn.apply(context);
+                    prev = now; // 执行了以后，重置上一次执行的时间为刚刚执行这次函数的时间，下次执行就用这个时间为基准
+                }
+            }
+        }
+
+        addBtn1.addEventListener('click', throttle(addPerson1, 1000));
+
+        // function something() {};
+        // function jieliu(fn, wait) {
+        //     var pervtime = 0;
+        //     var that = this;
+        //     return function() {
+        //         var now = Date.now();
+        //         if(now - pervtime >= wait) {
+        //             fn().bind(that, arguments);
+        //             pervtime = now;
+        //         }
+        //     }
+        // };
+        // dom.addEventListener('click', jieliu(something, 500));
+    </script>
+</body>
+</html>
