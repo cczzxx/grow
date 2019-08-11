@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>smallVue</title>
+</head>
+<body>
+    <div id="root"></div>
+</body>
+</html>
+<script>
+    function SmallVue(options) {
+        const {data, root, template, methods} = options;
+        this.data = data;
+        this.root = root;
+        this.template = template;
+        this.methods = methods;
+        this.observe();
+        this.resolveTemplate();
+    }
+
+    SmallVue.prototype.observe = function() {
+        Object.keys(this.data).forEach(key => {
+            let val = this.data[key];
+            const observer = new Observer();
+            Object.defineProperty(this.data, key, {
+                get: () => {
+                    console.log(Observer.target)
+                    if(Observer.target) {
+                        observer.subscribe(Observer.target);//添加订阅
+                    }
+                    return val;
+                },
+                set: newValue => {
+                    if(val === newValue) return;
+                    val = newValue;
+                    observer.publish(newValue);//发布改变
+                }
+            })
+        })
+    }
+
+    SmallVue.prototype.resolveTemplate = function() {
+        const root = document.createElement('div');
+        root.innerHTML = this.template;
+        const children = root.children;
+        const nodes = [].slice.call(children);// {} -> [] 初始化一级子节点
+        let index = 0;
+        const events = [];
+        while(nodes.length !== 0) {//从最前面开始解析子节点，子节点有节点再添加到最后
+            const node = nodes.shift();
+            const iNow = index ++;
+            node.setAttribute(`v-${iNow}`, "");//记录在第几行
+            if(node.children.length > 0) {
+                nodes.push(...node.children);
+            }else {
+                if(/\{\{(.*)\}\}/.test(node.innerHTML)) {//第几行需要赋值data中到数据时进行赋值
+                    const key = node.innerHTML.replace(/\{\{(.*)\}\}/, "$1");
+                    Observer.target = `v-${iNow}`;
+                    node.innerHTML = this.data[key];
+                    Observer.target = null;
+                }
+
+                //以click事件为例
+                //该行若有v-on 则添加方法名字至events
+                const method = node.getAttribute("v-on:click");
+                const methodInput = node.getAttribute("@input");
+                if(method) {
+                    events.push({
+                        key: `v-${iNow}`,
+                        type: "click",
+                        method
+                    });
+                };
+                if(methodInput) {
+                    events.push({
+                        key: `v-${iNow}`,
+                        type: "input",
+                        method: methodInput
+                    });
+                }
+            }
+        }
+        this.root.innerHTML = root.innerHTML;
+        events.forEach(event => {//addEventListener的方式给对应的元素绑定事件
+            const {key, type, method} = event;
+            const ele = document.querySelector(`[${key}]`);
+            ele.addEventListener(type, this.methods[method].bind(this));
+        })
+    }
+
+    function Observer() {
+        this.subscribers = [];
+    }
+
+    Observer.prototype.subscribe = function(subscriber) {//添加订阅者 这条数据哪几行在监听，初始化时触发
+        if(!~this.subscribers.indexOf(subscriber)) this.subscribers.push(subscriber);
+        console.log(this.subscribers)
+    }
+
+    Observer.prototype.publish = function(newValue) {//发布 数据改变时触发
+        this.subscribers.forEach(subscriber => {
+            const ele = document.querySelector(`[${subscriber}]`);
+            ele && (ele.innerHTML = newValue);
+        })
+    }
+
+    const root = document.getElementById("root");
+    const vm = new SmallVue({
+        data: {
+            value: 0,
+            value1: 0,
+            inputValue: "hh"
+        },
+        root,
+        template: `
+            <div>
+                <p>{{value}}</p>  
+                <button v-on:click="add">add</button>
+                <p>{{value}}</p>  
+                <button v-on:click="add">add</button>
+                <p>{{value1}}</p>  
+                <button v-on:click="add1">add</button> 
+                <div>
+                    <input @input="handleInput" />
+                    <span>{{inputValue}}</span>
+                </div>
+            </div>
+        `,
+        methods: {
+            add: function() {
+                this.data.value ++;
+            },
+            add1: function() {
+                this.data.value1 ++;
+            },
+            handleInput: function(e) {
+                this.data.inputValue = e.target.value;
+            }
+        }
+    })
+</script>
